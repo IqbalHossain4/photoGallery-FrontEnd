@@ -4,7 +4,9 @@ const useTotalImg = () => {
   const { refetch, data: totalImg = [] } = useQuery({
     ueryKey: ["totalImg"],
     queryFn: async () => {
-      const res = await axios.get("http://localhost:5000/getPhotos");
+      const res = await axios.get(
+        "https://photo-gallery-three-gamma.vercel.app/getPhotos"
+      );
       return res.data;
     },
   });

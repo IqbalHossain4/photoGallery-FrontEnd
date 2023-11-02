@@ -11,7 +11,7 @@
 body {
   max-width: 1220px;
   margin: 0 auto;
-  background-color: #fcf6f6;
+  background-color: white;
 }
 
 .grid-1 {
@@ -24,6 +24,7 @@ body {
   width: 100%;
   height: 100%;
   z-index: 2;
+  transition: all 0.4s ease-in-out;
 }
 .photosBox:first-child {
   width: 350px;
@@ -33,17 +34,6 @@ body {
   justify-content: center;
 }
 
-.photosBox::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0%;
-  height: 0%;
-  z-index: -1;
-  background-color: rgba(0, 0, 0, 0.4);
-  transition: width 0.4s ease-in-out, height 0.4s ease-in-out;
-}
 .checked {
   position: absolute;
   top: 5%;
@@ -64,13 +54,102 @@ body {
   opacity: 1;
 }
 
-.photosBox:hover::after {
-  width: 100%;
-  height: 100%;
-}
-
 .photosBox.dragging {
   transition: transform 0.2s ease;
+}
+
+.photosBox::after {
+  content: " ";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  transition: width 0.4s ease-in-out, height 0.4s ease-in-out;
+}
+
+.photosBox:hover::after {
+  height: 100%;
+  animation: serviceFram 0.4s ease;
+}
+@keyframes serviceFram {
+  0% {
+    height: 0;
+  }
+  100% {
+    color: white;
+    height: 100%;
+  }
+}
+
+.photosBox::before {
+  content: "";
+  position: absolute;
+  width: 0px;
+  height: 0px;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  background: white;
+  border-radius: 0px 0px 0px 100%;
+  transition: width 0.4s ease-in-out, height 0.4s ease-in-out;
+}
+
+.photosBox:hover::before {
+  width: 150px;
+  height: 100px;
+  animation: serviceFramTwo 0.4s ease;
+}
+
+@keyframes serviceFramTwo {
+  0% {
+    width: 0px;
+    height: 0px;
+  }
+  100% {
+    width: 150px;
+    height: 100px;
+  }
+}
+
+/* progress Bar  */
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar-inner {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.3s ease-in-out;
+  text-align: center;
+  line-height: 20px;
+  color: white;
+  font-weight: bold;
+  position: relative;
+}
+
+.progress-label {
+  font-size: 14px;
+  z-index: 2;
+}
+
+.progress-bar-inner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #7bff29, #0000);
+  z-index: 1;
+  opacity: 0.7;
 }
 
 /* Responsive */
@@ -89,6 +168,7 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
   .photosBox:first-child {
-    width: 200px;
+    width: 100%;
+    grid-column: span 2;
   }
 }

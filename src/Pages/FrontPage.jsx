@@ -7,9 +7,10 @@ const FrontPage = () => {
   const [imgUrl, setImgUrl] = useState(null);
   const [isImagePosted, setIsImagePosted] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
+  let [uploadProgress, setUploadProgress] = useState(0);
   const [images, setImages] = useState([]);
   const [totalImg, refetch] = useTotalImg();
-
+  console.log(uploadProgress);
   // Post Images
   if (!isImagePosted && imgUrl != null) {
     setIsImagePosted(true);
@@ -33,20 +34,33 @@ const FrontPage = () => {
             photo: img_url,
           };
 
-          axios.post("http://localhost:5000/postPhoto", image).then((res) => {
-            if (res.data.insertedId) {
-              Swal.fire({
-                position: "center",
-                icon: "success",
-                title: "Your work has been saved",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-              setImgUrl(null);
-              setIsImagePosted(false);
-              refetch();
-            }
-          });
+          axios
+            .post(
+              "https://photo-gallery-three-gamma.vercel.app/postPhoto",
+              image,
+              {
+                onUploadProgress: (progressEvent) => {
+                  const percentCompleted = Math.round(
+                    (progressEvent.loaded * 100) / progressEvent.total
+                  );
+                  setUploadProgress(percentCompleted);
+                },
+              }
+            )
+            .then((res) => {
+              if (res.data.insertedId) {
+                Swal.fire({
+                  position: "center",
+                  icon: "success",
+                  title: "Successfully Post Your Font",
+                  showConfirmButton: false,
+                  timer: 1500,
+                });
+                refetch();
+                setImgUrl(null);
+                setIsImagePosted(false);
+              }
+            });
         }
       });
   }
@@ -75,12 +89,15 @@ const FrontPage = () => {
       if (result.isConfirmed) {
         selectedItems.forEach((itemId) => {
           axios
-            .delete(`http://localhost:5000/deletePhotos/${itemId}`)
+            .delete(
+              `https://photo-gallery-three-gamma.vercel.app/deletePhotos/${itemId}`
+            )
             .then((res) => {
-              console.log(res.data);
+              if (res.data.deletedCount > 0) {
+                refetch();
+              }
             });
         });
-        refetch();
         Swal.fire("Deleted!", "Your file has been deleted.", "success");
       }
     });
@@ -137,89 +154,115 @@ const FrontPage = () => {
   return (
     <div>
       <div className="min-h-[100vh] flex items-center justify-cent rounded-md">
-        <div className="min-h-[80vh] w-full bg-white p-[25px] shadow-md">
-          <div className=" flex items-center justify-between">
-            <div>
-              {selectedItems.length > 0 ? (
-                <div className="flex items-center gap-[15px]">
-                  <span className="text-[40px] text-blue-600">
-                    <BiSolidCheckboxChecked />
-                  </span>
-                  <h4 className="font-[600] text-[18px] text-black">
-                    {selectedItems.length} Files Selected
-                  </h4>
+        <div className=" min-h-[80vh] w-full bg-[black]  p-[5px] flex items-center justify-cent">
+          <div className="z-[100] min-h-[79vh] w-full bg-[#faf9f9]   p-[25px] shadow-md rounded-md ">
+            <div className=" flex items-center justify-between">
+              <div>
+                {selectedItems.length > 0 ? (
+                  <div
+                    className={`${
+                      selectedItems.length == 0
+                        ? "hidden"
+                        : "flex items-center gap-[15px] "
+                    }`}
+                  >
+                    <span className="text-[40px] text-blue-600">
+                      <BiSolidCheckboxChecked />
+                    </span>
+                    <h4 className="font-[600] text-[18px] text-black">
+                      {selectedItems.length} Files Selected
+                    </h4>
+                  </div>
+                ) : (
+                  <h4 className="font-[600] text-[18px] text-black">Gallery</h4>
+                )}
+              </div>
+              {selectedItems.length > 0 && (
+                <div className="cursor-pointer">
+                  <button
+                    onClick={handleDeleteSelected}
+                    className="text-red-500 text-[30px] h-[60px] w-[60px] rounded-full  shadow-md flex items-center justify-center"
+                  >
+                    <BiTrash />
+                  </button>
                 </div>
-              ) : (
-                <h4 className="font-[600] text-[18px] text-black">Gallery</h4>
               )}
             </div>
-            {selectedItems.length > 0 && (
-              <div className="cursor-pointer">
-                <button
-                  onClick={handleDeleteSelected}
-                  className="text-red-500 text-[30px] h-[60px] w-[60px] rounded-full  shadow-md flex items-center justify-center"
-                >
-                  <BiTrash />
-                </button>
+            <hr className="mt-[15px]" />
+            {/* ProgressBar */}
+            {isImagePosted && (
+              <div className="md:w-[500px] w-[90%] mx-auto mt-[40px] ">
+                <div className="progress-bar">
+                  <div
+                    className="progress-bar-inner"
+                    style={{ width: `${uploadProgress}%` }}
+                  >
+                    {uploadProgress > 0 && (
+                      <span className="progress-label">{uploadProgress}%</span>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
-          </div>
-          <hr className="mt-[15px]" />
 
-          <div className="mt-[40px] flex items-center justify-center  ">
-            <div className="grid-1">
-              {images.map((img, index) => (
-                <div
-                  key={img._id}
-                  className="photosBox w-[200px] h-[200px] p-[30px]  overflow-hidden flex items-center justify-center shadow-xl"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDrop={handleDrop}
-                  onDragEnd={handleDragEnd}
-                  data-index={index}
-                >
+            {/* Main Content */}
+            <div className="mt-[40px] flex items-center justify-center  ">
+              <div className="grid-1">
+                {images.map((img, index) => (
                   <div
-                    className={` ${
-                      selectedItems.includes(img._id) ? "checked" : "checkBox"
-                    } `}
+                    key={img._id}
+                    className="photosBox bg-white rounded-md  h-[200px] p-[30px]  overflow-hidden flex items-center justify-center shadow-xl"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={handleDrop}
+                    onDragEnd={handleDragEnd}
+                    data-index={index}
                   >
-                    <input
-                      type="checkbox"
-                      onChange={() => handleCheckboxChange(img._id)}
-                      checked={selectedItems.includes(img._id)}
-                    />
-                  </div>
+                    <div
+                      className={` ${
+                        selectedItems.includes(img._id) ? "checked" : "checkBox"
+                      } z-[100]`}
+                    >
+                      <input
+                        type="checkbox"
+                        onChange={() => handleCheckboxChange(img._id)}
+                        checked={selectedItems.includes(img._id)}
+                        className="w-[20px] h-[20px]"
+                      />
+                    </div>
 
-                  <div className="w-[120px] h-[120px] flex items-center justify-center">
-                    <img
-                      src={img.photo}
-                      className="w-[100%] h-[100%] object-scale-down"
-                      alt="photo"
-                    />
+                    <div className="w-[120px] h-[120px] flex items-center justify-center">
+                      <img
+                        src={img.photo}
+                        className="w-[100%] h-[100%] object-scale-down"
+                        alt="photo"
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
-              {/* Image Upload */}
-              <div
-                onClick={() => document.querySelector(".input-field").click()}
-                className="border-dotted border-2 border-black p-[10px]  rounded-md cursor-pointer md:w-[200px] md:h-[200px] flex items-center justify-center"
-              >
-                <div>
-                  <img
-                    src="https://cdn-icons-png.flaticon.com/512/1160/1160358.png"
-                    className="mx-auto w-[20px] h-[20px] object-scale-down"
-                    alt=""
+                ))}
+                {/* Image Upload */}
+                <div
+                  onClick={() => document.querySelector(".input-field").click()}
+                  className="border-dotted border-2 border-black bg-white   rounded-md cursor-pointer h-[200px] p-[30px]  overflow-hidden flex items-center justify-center"
+                >
+                  <div>
+                    <img
+                      src="https://cdn-icons-png.flaticon.com/512/1160/1160358.png"
+                      className="mx-auto w-[20px] h-[20px] object-scale-down"
+                      alt=""
+                    />
+                    <h4 className="text-center font-[600] text-black mt-[10px]">
+                      Add Images
+                    </h4>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImgUrl(e.target.files[0])}
+                    className="input-field hidden"
                   />
-                  <h4 className="text-center font-[600] text-black mt-[10px]">
-                    Add Images
-                  </h4>
                 </div>
-                <input
-                  type="file"
-                  onChange={(e) => setImgUrl(e.target.files[0])}
-                  className="input-field hidden"
-                />
               </div>
             </div>
           </div>
