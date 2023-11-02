@@ -13,3 +13,82 @@ body {
   margin: 0 auto;
   background-color: #fcf6f6;
 }
+
+.grid-1 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px;
+}
+.photosBox {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+.photosBox:first-child {
+  width: 350px;
+  grid-row: span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photosBox::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 0%;
+  z-index: -1;
+  background-color: rgba(0, 0, 0, 0.4);
+  transition: width 0.4s ease-in-out, height 0.4s ease-in-out;
+}
+.checked {
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  z-index: 4;
+  transition: opacity 0.4s ease-in-out;
+}
+.checkBox {
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  opacity: 0;
+  z-index: 4;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.photosBox:hover .checkBox {
+  opacity: 1;
+}
+
+.photosBox:hover::after {
+  width: 100%;
+  height: 100%;
+}
+
+.photosBox.dragging {
+  transition: transform 0.2s ease;
+}
+
+/* Responsive */
+
+@media (max-width: 1024px) {
+  .grid-1 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .photosBox:first-child {
+    width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-1 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .photosBox:first-child {
+    width: 200px;
+  }
+}
